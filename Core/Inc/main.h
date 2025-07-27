@@ -38,6 +38,7 @@ extern "C" {
 #include <stdio.h>
 #include "math.h"
 #include "stdlib.h"
+#include "string.h"
 #include "stdbool.h"
 /* USER CODE END Includes */
 

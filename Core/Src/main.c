@@ -115,11 +115,24 @@ int main(void)
   MX_TIM7_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  char msg[20] = {0};
+  char msgdata[20] = {0};
+  char data[20] = {0};
+  HAL_UART_Transmit(&huart1, "begin\n", 6, 30);
+  HAL_UART_Transmit(&huart3, "begin\n", 6, 30);
+
+  HAL_UART_Receive(&huart3, msg, 15, 50);
+  msg[15] = '\n';
+  HAL_UART_Transmit(&huart1, msg, 16, 50);
+
+  HAL_UART_Receive(&huart3, msgdata, 2, HAL_MAX_DELAY);
+  int16_t receive = *(int16_t*)msgdata;
+  sprintf(data, "%d", receive);
+  HAL_UART_Transmit(&huart1, data, strlen(data),50);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_UART_Transmit_IT(&huart1, "begin\n", 6);
   while (1)
   {
     //HAL_GPIO_WritePin(YIN1_GPIO_Port, YIN1_Pin, 1);
@@ -128,8 +141,8 @@ int main(void)
     //HAL_GPIO_WritePin(YIN4_GPIO_Port, YIN4_Pin, 1);
     //StepMotor_SetSpeed(1,3000,3);
     //StepMotor_TurnCircle(1, 1, 3);
-    StepMotor_SetSpeed_IT(1, 3000, 3);
-    HAL_Delay(2000);
+    //StepMotor_SetSpeed_IT(1, 3000, 3);
+    //HAL_Delay(2000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
