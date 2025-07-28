@@ -10,7 +10,7 @@
 #define STEPS_PER_CIRCLE 4096
 #define DEG_PER_STEP     (360.0f / STEPS_PER_CIRCLE)
 
-int16_t vector[2] = {0};//接受向量信息  //待修改的协议
+int16_t vectorX = 0, vectorY = 0;//接受向量信息  
 static int32_t remain_stepX = 0;//横向步进电机剩余移动步数
 static int32_t remain_stepY = 0;//纵向步进电机剩余移动步数
 static const GPIO_PinState step_stop[4] = {0, 0, 0, 0};
@@ -47,12 +47,24 @@ static inline void StepMotor_WritePins_Y(const GPIO_PinState value[]) {
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+    static char msgdata[5] = {0};
     if(huart == &huart3){
-        __HAL_TIM_SET_AUTORELOAD(&htim16, STEPTIME_PLUS_VECTOR / vector[0]);
-        __HAL_TIM_SET_AUTORELOAD(&htim17, STEPTIME_PLUS_VECTOR / vector[1]);
-        //remain_stepX = vector[0] * VECTOR_TO_STEP;
-        //remain_stepY = vector[1] * VECTOR_TO_STEP;
-        HAL_UART_Receive_DMA(&huart3, vector, 4);  //待修改的协议
+        HAL_UART_Receive(&huart3, msgdata, 4, HAL_MAX_DELAY);
+        vectorX = *(int16_t*)msgdata;
+        vectorY = *(int16_t*)(msgdata+2);
+        char data[20] = {0};
+        sprintf(data, "%d %d", vectorX, vectorY);
+        OLED_ShowString(0, 10, data, 8, 1);
+        OLED_ShowString(0, 20, "now in loop", 8, 1);
+        OLED_Refresh();
+        //memset(msgdata, 0, 2);
+        //memset(&receive_x, 0, 2);
+        //memset(&receive_y, 0, 2);
+        __HAL_TIM_SET_AUTORELOAD(&htim16, STEPTIME_PLUS_VECTOR / vectorX);
+        __HAL_TIM_SET_AUTORELOAD(&htim17, STEPTIME_PLUS_VECTOR / vectorY);
+        remain_stepX = vectorX * VECTOR_TO_STEP;
+        remain_stepY = vectorY * VECTOR_TO_STEP;
+        HAL_UART_Receive_DMA(&huart3, msgdata, 4);
     }
 }
 

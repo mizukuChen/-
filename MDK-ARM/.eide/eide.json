@@ -59,6 +59,9 @@
                   },
                   {
                     "path": "../Core/Src/28byj48.c"
+                  },
+                  {
+                    "path": "../Core/Src/oled.c"
                   }
                 ],
                 "folders": []

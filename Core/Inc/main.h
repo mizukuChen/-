@@ -35,6 +35,7 @@ extern "C" {
 #include "usart.h"
 #include "gpio.h"
 
+#include "oled.h"
 #include <stdio.h>
 #include "math.h"
 #include "stdlib.h"
