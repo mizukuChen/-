@@ -100,15 +100,20 @@ class Stepper:
         self.step(motor_idx, steps, delay_ms)
 
 
-Xin = [12,14,16,18]
+Xin = [2,5,6,42]
 Yin = [32,33,34,35]
 fpioa.set_function(32,FPIOA.GPIO32)
 fpioa.set_function(33,FPIOA.GPIO33)
 fpioa.set_function(34,FPIOA.GPIO34)
 fpioa.set_function(35,FPIOA.GPIO35)
+fpioa.set_function(2,FPIOA.GPIO2)
+fpioa.set_function(5,FPIOA.GPIO5)
+fpioa.set_function(6,FPIOA.GPIO6)
+fpioa.set_function(42,FPIOA.GPIO42)
 #fpioa.set_function(13,FPIOA.GPIO13)
 stepper = Stepper(Xin,Yin)
 while True:
-    stepper.step(1, -50, 3)
+    stepper.turn_angle(1, 30, 1)
+    stepper.turn_angle(0, 30, 1)
     time.sleep(2)
     pass
