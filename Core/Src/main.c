@@ -114,8 +114,9 @@ int main(void)
   MX_TIM17_Init();
   MX_TIM7_Init();
   MX_USART1_UART_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
-
+  StepMotor_Init_IT();
   OLED_Init();
   OLED_ShowString(0, 0, "Hello,World!", 8, 1);
   OLED_Refresh();
@@ -123,7 +124,7 @@ int main(void)
   
   int16_t receive_x = 0;
   int16_t receive_y = 0;
-  HAL_UART_Receive_DMA(&huart3, msg, 4);
+  HAL_UART_Receive_DMA(&huart3, msg_vector, 4);
 
   /* USER CODE END 2 */
 
@@ -131,7 +132,20 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    
+    StepMotor_TurnAngle_IT(0, 20, 3.01);
+    StepMotor_TurnAngle_IT(1, 20, 3);
+    HAL_Delay(2000);
+    //HAL_UART_Receive(&huart3, msg, 4, HAL_MAX_DELAY);
+    //receive_x = *(int16_t*)msg;
+    //receive_y = *(int16_t*)(msg+2);
+    //char data[20] = {0};
+    //sprintf(data, "%d %d", receive_x, receive_y);
+    //OLED_ShowString(0, 10, data, 8, 1);
+    //OLED_ShowString(0, 20, "now in loop", 8, 1);
+    //OLED_Refresh();
+    //memset(msgdata, 0, 2);
+    //memset(&receive_x, 0, 2);
+    //memset(&receive_y, 0, 2);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

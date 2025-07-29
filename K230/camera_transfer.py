@@ -18,6 +18,19 @@ laser_on_line_threshold =[(22, 100, 6, 127, -47, 39)] #invert=False
 laser_combine_threshold = [(22, 100, 6, 127, -47, 39), (32, 100, 9, 127, -22, -1)]#invert=False
 black_line_threshold =[(100, 16, -128, 127, -128, 127)] #invert=True
 
+def transfer_vector(uart, vector_x, vector_y):
+    # 使用struct.pack将short整数（有符号2字节）打包为二进制数据，使用大端序（little_endian）（'<'）
+    packed_data_x = struct.pack('<h', vector_x)
+    packed_data_y = struct.pack('<h', vector_y)
+    # print(packed_data_x) # debug
+    # print(packed_data_y) # debug
+    # 创建一个100字节的缓冲区，并将打包后的数据复制到开头
+    send_buf = bytearray(4)
+    send_buf[0:2] = packed_data_x[0:2]
+    send_buf[2:4] = packed_data_y[0:2]
+    # print(send_buf) # debug
+    uart.write(send_buf[0:4])
+
 
 
 #init
@@ -37,6 +50,8 @@ MediaManager.init() #Initialize the media resource manager
 #sensor run
 sensor.run() #Start the camera
 
+clock = time.clock()
+
 #UART init
 fpioa = FPIOA()
 fpioa.set_function(3,FPIOA.UART1_TXD)
@@ -48,6 +63,7 @@ uart=UART(UART.UART1,115200) #设置串口号1和波特率
 
 #infinite loop
 while True:
+    clock.tick()
     img = sensor.snapshot()
     target_blobs = img.find_blobs(laser_combine_threshold, invert=False, roi=(160, 120, 320, 240)) #检测指定色块，需给定threshold和invert
     if target_blobs:
@@ -56,20 +72,6 @@ while True:
         img.draw_rectangle(target_blob[0:4])#周围画边框
         print(target_blob.cx(), target_blob.cy())#打印色块中心位置
 
-        # 使用struct.pack将short整数（有符号2字节）打包为二进制数据，使用大端序（little_endian）（'<'）
-        packed_data_x = struct.pack('<h', target_blob.cx())
-        packed_data_y = struct.pack('<h', target_blob.cy())
-        print(packed_data_x)
-        print(packed_data_y)
-        # 创建一个100字节的缓冲区，并将打包后的数据复制到开头
-        send_buf = bytearray(2)
-        send_buf[0:2] = packed_data_x[0:2]
-        send_buf[2:4] = packed_data_y[0:2]
-        print(send_buf)
-
-        sleep_ms(2)
-
-        uart.write(send_buf[0:4])
-
+    print(clock.fps()) #FPS
     Display.show_image(img, x=round((800-sensor.width())/2),y=round((480-sensor.height())/2))
 

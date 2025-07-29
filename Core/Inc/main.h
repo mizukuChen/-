@@ -34,6 +34,8 @@ extern "C" {
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "28byj48.h"
+#include "28byj48_it.h"
 
 #include "oled.h"
 #include <stdio.h>
