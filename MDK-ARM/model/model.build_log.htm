@@ -3,85 +3,89 @@
 <pre>
 <h1>µVision Build Log</h1>
 <h2>Tool Versions:</h2>
-IDE-Version: ¦ÌVision V5.27.0.0
-Copyright (C) 2018 ARM Ltd and ARM Germany GmbH. All rights reserved.
-License Information: mizuku 8615194303017, hzkjwhu, LIC=TIVNB-2S5SQ-DYNV3-A1QTT-14VU9-TESGM
+IDE-Version: ¦ÌVision V5.41.0.0
+Copyright (C) 2024 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: gulugulu Alan, hustee, LIC=14HV2-9IMLW-74NS0-BWIXY-VTY58-TN3FI
  
 Tool Versions:
-Toolchain:       MDK-ARM Plus  Version: 5.27.0.0
-Toolchain Path:  D:\work_office\Keil_v5\ARM\ARMCLANG\Bin
-C Compiler:      ArmClang.exe V6.11
-Assembler:       Armasm.exe V6.11
-Linker/Locator:  ArmLink.exe V6.11
-Library Manager: ArmAr.exe V6.11
-Hex Converter:   FromElf.exe V6.11
-CPU DLL:         SARMCM3.DLL V5.27.0.0
-Dialog DLL:      DCM.DLL V1.17.2.0
-Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.0.5.0
-Dialog DLL:      TCM.DLL V1.36.1.0
+Toolchain:       MDK-ARM Plus  Version: 5.41.0.0
+Toolchain Path:  D:\Keil_v5\ARM\ARMCLANG\Bin
+C Compiler:      ArmClang.exe V6.22
+Assembler:       Armasm.exe V6.22
+Linker/Locator:  ArmLink.exe V6.22
+Library Manager: ArmAr.exe V6.22
+Hex Converter:   FromElf.exe V6.22
+CPU DLL:         SARMCM3.DLL V5.41.0.0
+Dialog DLL:      DCM.DLL V1.17.5.0
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.3.0.0
+Dialog DLL:      TCM.DLL V1.56.4.0
  
 <h2>Project:</h2>
-D:\work_office\keil_project\model\MDK-ARM\model.uvprojx
-Project File Date:  05/04/2025
+E:\Learning\CanMV\cloud_terrace_model\MDK-ARM\model.uvprojx
+Project File Date:  07/28/2025
 
 <h2>Output:</h2>
-*** Using Compiler 'V6.11', folder: 'D:\work_office\Keil_v5\ARM\ARMCLANG\Bin'
-Rebuild target 'model'
-assembling startup_stm32h743xx.s...
-compiling stm32h7xx_hal_gpio.c...
-compiling stm32h7xx_hal_msp.c...
-compiling main.c...
-compiling stm32h7xx_hal_flash.c...
-compiling stm32h7xx_hal_hsem.c...
-compiling stm32h7xx_it.c...
-compiling usart.c...
-compiling tim.c...
-compiling gpio.c...
-compiling stm32h7xx_hal_cortex.c...
-compiling stm32h7xx_hal_rcc_ex.c...
-compiling stm32h7xx_hal_rcc.c...
-compiling stm32h7xx_hal_flash_ex.c...
-compiling stm32h7xx_hal_dma_ex.c...
-compiling stm32h7xx_hal_dma.c...
-compiling stm32h7xx_hal_pwr.c...
-compiling stm32h7xx_hal_mdma.c...
-compiling stm32h7xx_hal_pwr_ex.c...
-compiling stm32h7xx_hal.c...
-compiling stm32h7xx_hal_exti.c...
-compiling system_stm32h7xx.c...
-compiling stm32h7xx_hal_i2c_ex.c...
-compiling stm32h7xx_hal_uart_ex.c...
-compiling stm32h7xx_hal_i2c.c...
-compiling stm32h7xx_hal_tim_ex.c...
-compiling stm32h7xx_hal_uart.c...
-compiling stm32h7xx_hal_tim.c...
+*** Using Compiler 'V6.22', folder: 'D:\Keil_v5\ARM\ARMCLANG\Bin'
+Build target 'model'
+../Core/Src/28byj48_it.c(57): warning: passing 'char[20]' to parameter of type 'uint8_t *' (aka 'unsigned char *') converts between pointers to integer types where one is of the unique plain 'char' type and the other is not [-Wpointer-sign]
+   57 |         OLED_ShowString(0, 10, data, 8, 1);
+      |                                ^~~~
+../Core/Inc\oled.h(66): note: passing argument to parameter 'chr' here
+   66 | void OLED_ShowString(u8 x,u8 y,u8 *chr,u8 size1,u8 mode);
+      |                                    ^
+../Core/Src/28byj48_it.c(58): warning: passing 'char[12]' to parameter of type 'uint8_t *' (aka 'unsigned char *') converts between pointers to integer types where one is of the unique plain 'char' type and the other is not [-Wpointer-sign]
+   58 |         OLED_ShowString(0, 20, "now in loop", 8, 1);
+      |                                ^~~~~~~~~~~~~
+../Core/Inc\oled.h(66): note: passing argument to parameter 'chr' here
+   66 | void OLED_ShowString(u8 x,u8 y,u8 *chr,u8 size1,u8 mode);
+      |                                    ^
+../Core/Src/28byj48_it.c(59): warning: passing 'char[5]' to parameter of type 'uint8_t *' (aka 'unsigned char *') converts between pointers to integer types where one is of the unique plain 'char' type and the other is not [-Wpointer-sign]
+   59 |         OLED_ShowString(0, 30, msg_vector, 8, 1);
+      |                                ^~~~~~~~~~
+../Core/Inc\oled.h(66): note: passing argument to parameter 'chr' here
+   66 | void OLED_ShowString(u8 x,u8 y,u8 *chr,u8 size1,u8 mode);
+      |                                    ^
+../Core/Src/28byj48_it.c(70): warning: passing 'char[5]' to parameter of type 'uint8_t *' (aka 'unsigned char *') converts between pointers to integer types where one is of the unique plain 'char' type and the other is not [-Wpointer-sign]
+   70 |         HAL_UART_Receive_DMA(&huart3, msg_vector, 4);
+      |                                       ^~~~~~~~~~
+../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_uart.h(1642): note: passing argument to parameter 'pData' here
+ 1642 | HAL_StatusTypeDef HAL_UART_Receive_DMA(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
+      |                                                                            ^
+4 warnings generated.
+compiling 28byj48_it.c...
 linking...
-Program Size: Code=21620 RO-data=752 RW-data=16 ZI-data=29928  
+model\model.sct(16): warning: L6314W: No section matches pattern //(RO).
+model\model.sct(17): warning: L6314W: No section matches pattern //(RO).
+model\model.sct(19): warning: L6314W: No section matches pattern *(.RAM_D1).
+model\model.sct(23): warning: L6314W: No section matches pattern *(.RAM_D2).
+model\model.sct(27): warning: L6314W: No section matches pattern *(.RAM_D3).
+Program Size: Code=61460 RO-data=7464 RW-data=16 ZI-data=32080  
+Finished: 0 information, 5 warning and 0 error messages.
 FromELF: creating hex file...
-"model\model.axf" - 0 Error(s), 0 Warning(s).
+"model\model.axf" - 0 Error(s), 9 Warning(s).
 
 <h2>Software Packages used:</h2>
 
 Package Vendor: ARM
-                http://www.keil.com/pack/ARM.CMSIS.5.4.0.pack
-                ARM.CMSIS.5.4.0
-                CMSIS (Cortex Microcontroller Software Interface Standard)
-   * Component: CORE Version: 5.1.2
+                https://www.keil.com/pack/ARM.CMSIS.6.1.0.pack
+                ARM::CMSIS@6.1.0
+                CMSIS (Common Microcontroller Software Interface Standard)
+   * Component: CORE Version: 6.1.0
 
 Package Vendor: Keil
-                https://www.keil.com/pack/Keil.STM32H7xx_DFP.3.1.1.pack
-                Keil.STM32H7xx_DFP.3.1.1
-                STMicroelectronics STM32H7 Series Device Support and Examples
+                https://www.keil.com/pack/Keil.STM32H7xx_DFP.4.0.0.pack
+                Keil::STM32H7xx_DFP@4.0.0
+                STMicroelectronics STM32H7 Series Device Support
 
 <h2>Collection of Component include folders:</h2>
-  .\RTE\_model
-  D:\work_office\Keil_v5\ARM\PACK\ARM\CMSIS\5.4.0\CMSIS\Core\Include
-  D:\work_office\Keil_v5\ARM\PACK\Keil\STM32H7xx_DFP\3.1.1\Drivers\CMSIS\Device\ST\STM32H7xx\Include
+  ./RTE/_model
+  C:/Users/Alan/AppData/Local/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include
 
 <h2>Collection of Component Files used:</h2>
 
-   * Component: ARM::CMSIS:CORE:5.1.2
-Build Time Elapsed:  00:00:02
+   * Component: ARM::CMSIS:CORE@6.1.0
+      Include file:  CMSIS/Core/Include/tz_context.h
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

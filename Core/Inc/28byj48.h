@@ -21,7 +21,7 @@ void StepMotor_SetSpeed(uint8_t motor_mane, int32_t step_count, uint8_t delay_ti
  * @param angle_deg 移动的角度（>0为向左/向上）
  * @param delay_time 每一拍的时间间隔(ms),一般填3
  */
-void StepMotor_RotateAngle(uint8_t motor_mane, float angle_deg, uint8_t delay_time);
+void StepMotor_TurnAngle(uint8_t motor_mane, float angle_deg, uint8_t delay_time);
 
 /**
  * @brief 
@@ -30,6 +30,6 @@ void StepMotor_RotateAngle(uint8_t motor_mane, float angle_deg, uint8_t delay_ti
  * @param circles 移动的圈数（>0为向左/向上）
  * @param delay_time 每一拍的时间间隔(ms),一般填3
  */
-void StepMotor_RotateCircle(uint8_t motor_mane, int8_t circles, uint8_t delay_time);
+void StepMotor_TurnCircle(uint8_t motor_mane, int8_t circles, uint8_t delay_time);
 
 #endif
