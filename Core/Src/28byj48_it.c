@@ -49,7 +49,7 @@ static inline void StepMotor_WritePins_Y(const GPIO_PinState value[]) {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     static char msgdata[5] = {0};
     if(huart == &huart3){
-        HAL_UART_Receive(&huart3, msgdata, 4, HAL_MAX_DELAY);
+        //HAL_UART_Transmit(&huart3, msgdata, 4, 30);
         vectorX = *(int16_t*)msgdata;
         vectorY = *(int16_t*)(msgdata+2);
         char data[20] = {0};

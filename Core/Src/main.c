@@ -18,9 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
 #include "dma.h"
-#include "i2c.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -29,6 +27,8 @@
 /* USER CODE BEGIN Includes */
 #include <28byj48.h>  
 #include <28byj48_it.h>
+#include <MKS42C.h>
+#include <MKS42C_it.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -104,11 +104,8 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART3_UART_Init();
-  MX_ADC3_Init();
-  MX_TIM4_Init();
   MX_USART6_UART_Init();
   MX_TIM3_Init();
-  MX_I2C1_Init();
   MX_TIM2_Init();
   MX_TIM16_Init();
   MX_TIM17_Init();
@@ -123,7 +120,7 @@ int main(void)
   
   int16_t receive_x = 0;
   int16_t receive_y = 0;
-  HAL_UART_Receive_DMA(&huart3, msg, 4);
+  //HAL_UART_Receive_DMA(&huart3, msg, 4);
 
   /* USER CODE END 2 */
 
@@ -131,7 +128,21 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    
+    /*-----------顺时针转10圈-------------*/
+		Step42_En(0, 0);				//使能电机
+		Step42_Dir(0, 0);				//设置方向
+		//Step42_Stp(0, 32000, 100);	//设置脉冲和转速
+/*-----------停止3秒-------------*/	
+		Step42_En(0, 1);				//释放电机
+		HAL_Delay(2000);
+		
+/*-----------逆时针转10圈-------------*/	
+		Step42_En(0, 0);				//使能电机
+		Step42_Dir(0, 1);				//设置方向
+		//Step42_Stp(0, 32000, 100);	//设置脉冲和转速
+/*-----------停止3秒-------------*/	
+		Step42_En(0, 1);				//释放电机
+		HAL_Delay(2000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

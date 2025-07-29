@@ -49,19 +49,19 @@
                     "path": "../Core/Src/28byj48_it.c"
                   },
                   {
-                    "path": "../Core/Src/adc.c"
-                  },
-                  {
                     "path": "../Core/Src/dma.c"
-                  },
-                  {
-                    "path": "../Core/Src/i2c.c"
                   },
                   {
                     "path": "../Core/Src/28byj48.c"
                   },
                   {
                     "path": "../Core/Src/oled.c"
+                  },
+                  {
+                    "path": "../Core/Src/MKS42C.c"
+                  },
+                  {
+                    "path": "../Core/Src/MKS42C_it.c"
                   }
                 ],
                 "folders": []
