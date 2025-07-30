@@ -1,12 +1,6 @@
 #include <main.h>
 #include <MKS42C.h>
 
-//步数与角度对应关系
-#define ANGLE_MODE 1.8
-#define STEP_MODE 16
-#define STEPS_PER_CIRCLE 360 / ANGLE_MODE * STEP_MODE
-#define DEG_PER_STEP  1.0f / ANGLE_MODE * STEP_MODE
-
 void Step42_Init(void) {
     HAL_GPIO_WritePin(StpX_GPIO_Port, StpX_Pin, 0);
     HAL_GPIO_WritePin(StpY_GPIO_Port, StpY_Pin, 0);
@@ -34,7 +28,19 @@ void Step42_Dir(uint8_t motor_mane, GPIO_PinState status)
 
 void Step42_Stp(uint8_t motor_mane, uint32_t step, uint8_t fps)
 {
+    if(step > 0)
+    {
+        Step42_Dir(motor_mane, TURN_FORWARD);
+    }
+
+    else if(step < 0)
+    {
+        Step42_Dir(motor_mane, TURN_REVERSE);
+        step = -step;
+    }
+
     uint16_t delay_time = 1000 / fps;
+
 	if(motor_mane == 0)
     {
         while(step--)
@@ -45,6 +51,7 @@ void Step42_Stp(uint8_t motor_mane, uint32_t step, uint8_t fps)
 		    Delay_Us(0.5 * delay_time);
         }
     }
+
 	if(motor_mane == 1)
     {
         while(step--)
@@ -58,10 +65,30 @@ void Step42_Stp(uint8_t motor_mane, uint32_t step, uint8_t fps)
 }
 
 void Step42_TurnAngle(uint8_t motor_mane, float angle_deg, uint8_t fps) {
+    if(angle_deg > 0)
+    {
+        Step42_Dir(motor_mane, TURN_FORWARD);
+    }
+    
+    else if(angle_deg < 0)
+    {
+        Step42_Dir(motor_mane, TURN_REVERSE);
+    }
+
     Step42_Stp(motor_mane, (int32_t)((angle_deg / DEG_PER_STEP) + 0.5f), fps);
 }
 
 void StepMotor_TurnCircle(uint8_t motor_mane, int8_t circles, uint8_t fps) {
+    if(circles > 0)
+    {
+        Step42_Dir(motor_mane, TURN_FORWARD);
+    }
+
+    else if(circles < 0)
+    {
+        Step42_Dir(motor_mane, TURN_REVERSE);
+    }
+
     Step42_Stp(motor_mane, circles * STEPS_PER_CIRCLE, fps);
 }
 

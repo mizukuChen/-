@@ -1,15 +1,15 @@
 #include <main.h>
 #include <28byj48_it.h>
 
-#define NORMAL_VECTOP 48.33
 //目标向量的一般大小
-#define STEPTIME_PLUS_VECTOR 10000 * 3 * NORMAL_VECTOP
+#define NORMAL_VECTOP 48.33
 //单拍间隔与坐标差的乘积
-#define VECTOR_TO_STEP 0.3
+#define STEPTIME_PLUS_VECTOR 10000 * 3 * NORMAL_VECTOP
 //单个像素对应的步数差
+#define VECTOR_TO_STEP 0.3
+//一圈和一度对应的步数
 #define STEPS_PER_CIRCLE 4096
 #define DEG_PER_STEP     (360.0f / STEPS_PER_CIRCLE)
-//一圈和一度对应的步数
 #define TIMX &htim15
 #define TIMY &htim16
 

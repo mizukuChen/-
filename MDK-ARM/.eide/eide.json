@@ -46,22 +46,7 @@
                     "path": "../Core/Src/stm32h7xx_hal_msp.c"
                   },
                   {
-                    "path": "../Core/Src/28byj48_it.c"
-                  },
-                  {
                     "path": "../Core/Src/dma.c"
-                  },
-                  {
-                    "path": "../Core/Src/28byj48.c"
-                  },
-                  {
-                    "path": "../Core/Src/oled.c"
-                  },
-                  {
-                    "path": "../Core/Src/MKS42C.c"
-                  },
-                  {
-                    "path": "../Core/Src/MKS42C_it.c"
                   }
                 ],
                 "folders": []
@@ -136,12 +121,6 @@
               },
               {
                 "path": "../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c"
-              },
-              {
-                "path": "../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_adc.c"
-              },
-              {
-                "path": "../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_adc_ex.c"
               }
             ],
             "folders": []
@@ -154,11 +133,54 @@
               }
             ],
             "folders": []
+          },
+          {
+            "name": "Mode",
+            "files": [],
+            "folders": []
+          },
+          {
+            "name": "Hardware",
+            "files": [
+              {
+                "path": "../Drivers/Hardware/Src/28byj48.c"
+              },
+              {
+                "path": "../Drivers/Hardware/Src/28byj48_it.c"
+              },
+              {
+                "path": "../Drivers/Hardware/Src/MKS32C_uart_Read.c"
+              },
+              {
+                "path": "../Drivers/Hardware/Src/MKS42C.c"
+              },
+              {
+                "path": "../Drivers/Hardware/Src/MKS42C_it.c"
+              },
+              {
+                "path": "../Drivers/Hardware/Src/MKS42C_uart_communication.c"
+              },
+              {
+                "path": "../Drivers/Hardware/Src/MKS42C_uart_Motion.c"
+              },
+              {
+                "path": "../Drivers/Hardware/Src/MKS42C_uart_Set.c"
+              },
+              {
+                "path": "../Drivers/Hardware/Src/oled.c"
+              }
+            ],
+            "folders": []
           }
         ]
       },
       {
         "name": "::CMSIS",
+        "files": [],
+        "folders": []
+      },
+      {
+        "name": "Task",
         "files": [],
         "folders": []
       }
@@ -322,7 +344,10 @@
           "../Drivers/CMSIS/Device/ST/STM32H7xx/Include",
           "../Drivers/CMSIS/Include",
           ".cmsis/include",
-          "RTE/_model"
+          "RTE/_model",
+          "../Drivers/Hardware/Inc",
+          "../Drivers/Mode/Inc",
+          "../Task/Inc"
         ],
         "libList": [],
         "defineList": [

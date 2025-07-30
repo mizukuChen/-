@@ -1,4 +1,4 @@
-#ifndef __28BYJ48_H__
+#ifdef __28BYJ48_H__
 #define __28BYJ48_H__
 
 #include <main.h>

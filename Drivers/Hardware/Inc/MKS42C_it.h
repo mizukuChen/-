@@ -5,5 +5,7 @@
 
 void Step42_Init_IT(void);
 void Step42_Stp_IT(uint8_t motor_mane, int32_t step_count, uint8_t fps);
+void Step42_TurnAngle_IT(uint8_t motor_mane, float angle_deg, uint8_t fps);
+void StepMotor_TurnCircle_IT(uint8_t motor_mane, int8_t circles, uint8_t fps);
 
 #endif
