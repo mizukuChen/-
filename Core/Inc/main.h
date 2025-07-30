@@ -35,18 +35,11 @@ extern "C" {
 #include "usart.h"
 #include "gpio.h"
 
-#include "oled.h"
 #include <stdio.h>
 #include "math.h"
 #include "stdlib.h"
 #include "string.h"
 #include "stdbool.h"
-
-#include <MKS42C.h>
-#include <MKS42C_it.h>
-#include <MKS42C_uart.h>
-#include <28byj48.h>  
-#include <28byj48_it.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

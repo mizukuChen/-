@@ -50,6 +50,108 @@
                   }
                 ],
                 "folders": []
+              },
+              {
+                "name": "Include",
+                "files": [],
+                "folders": [
+                  {
+                    "name": "Core_Inc",
+                    "files": [
+                      {
+                        "path": "../Core/Inc/dma.h"
+                      },
+                      {
+                        "path": "../Core/Inc/gpio.h"
+                      },
+                      {
+                        "path": "../Core/Inc/main.h"
+                      },
+                      {
+                        "path": "../Core/Inc/stm32h7xx_hal_conf.h"
+                      },
+                      {
+                        "path": "../Core/Inc/stm32h7xx_it.h"
+                      },
+                      {
+                        "path": "../Core/Inc/tim.h"
+                      },
+                      {
+                        "path": "../Core/Inc/usart.h"
+                      }
+                    ],
+                    "folders": []
+                  },
+                  {
+                    "name": "Hardware_Inc",
+                    "files": [
+                      {
+                        "path": "../Drivers/Hardware/Inc/28byj48.h"
+                      },
+                      {
+                        "path": "../Drivers/Hardware/Inc/28byj48_it.h"
+                      },
+                      {
+                        "path": "../Drivers/Hardware/Inc/MKS42C.h"
+                      },
+                      {
+                        "path": "../Drivers/Hardware/Inc/MKS42C_it.h"
+                      },
+                      {
+                        "path": "../Drivers/Hardware/Inc/MKS42C_uart.h"
+                      },
+                      {
+                        "path": "../Drivers/Hardware/Inc/oled.h"
+                      },
+                      {
+                        "path": "../Drivers/Hardware/Inc/oledfont.h"
+                      },
+                      {
+                        "path": "../Drivers/Hardware/Inc/Hardware.h"
+                      }
+                    ],
+                    "folders": []
+                  },
+                  {
+                    "name": "Mode_Inc",
+                    "files": [
+                      {
+                        "path": "../Drivers/Mode/Inc/Mode.h"
+                      },
+                      {
+                        "path": "../Drivers/Mode/Inc/Mode_config.h"
+                      },
+                      {
+                        "path": "../Drivers/Mode/Inc/Mode_K230.h"
+                      },
+                      {
+                        "path": "../Drivers/Mode/Inc/Mode_UI.h"
+                      },
+                      {
+                        "path": "../Drivers/Mode/Inc/Mode_pid.h"
+                      }
+                    ],
+                    "folders": []
+                  },
+                  {
+                    "name": "Task_Inc",
+                    "files": [
+                      {
+                        "path": "../Task/Inc/basic_task.h"
+                      },
+                      {
+                        "path": "../Task/Inc/config.h"
+                      },
+                      {
+                        "path": "../Task/Inc/further_task.h"
+                      },
+                      {
+                        "path": "../Task/Inc/Task.h"
+                      }
+                    ],
+                    "folders": []
+                  }
+                ]
               }
             ]
           }
@@ -136,7 +238,20 @@
           },
           {
             "name": "Mode",
-            "files": [],
+            "files": [
+              {
+                "path": "../Drivers/Mode/Src/Mode_config.c"
+              },
+              {
+                "path": "../Drivers/Mode/Src/Mode_K230.c"
+              },
+              {
+                "path": "../Drivers/Mode/Src/Mode_pid.c"
+              },
+              {
+                "path": "../Drivers/Mode/Src/Mode_UI.c"
+              }
+            ],
             "folders": []
           },
           {
@@ -181,7 +296,20 @@
       },
       {
         "name": "Task",
-        "files": [],
+        "files": [
+          {
+            "path": "../Task/Src/basic_task.c"
+          },
+          {
+            "path": "../Task/Src/config.c"
+          },
+          {
+            "path": "../Task/Src/further_task.c"
+          },
+          {
+            "path": "../Task/Src/test.c"
+          }
+        ],
         "folders": []
       }
     ]
