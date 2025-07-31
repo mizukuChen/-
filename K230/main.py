@@ -10,6 +10,9 @@ from machine import UART
 
 from time import sleep_ms
 
+from MKS32C_uart import Stepmotor
+
+from PID import PID
 
 
 #user constant
@@ -23,27 +26,10 @@ rect_point = [[],[]]
 rect_point_mid = []
 target_corners = []
 
-def transfer_vector(uart, vector_x, vector_y):
-    # 使用struct.pack将short整数（有符号2字节）打包为二进制数据，使用大端序（little_endian）（'<'）
-    packed_data_x = struct.pack('<h', vector_x)
-    packed_data_y = struct.pack('<h', vector_y)
-    # print(packed_data_x) # debug
-    # print(packed_data_y) # debug
-    # 创建一个100字节的缓冲区，并将打包后的数据复制到开头
-    send_buf = bytearray(4)
-    send_buf[0:2] = packed_data_x[0:2]
-    send_buf[2:4] = packed_data_y[0:2]
-    # print(send_buf) # debug
-    uart.write(send_buf[0:4])
-
-
-
 #init
-#UART init
-fpioa = FPIOA()
-fpioa.set_function(3,FPIOA.UART1_TXD)
-fpioa.set_function(4,FPIOA.UART1_RXD)
-uart=UART(UART.UART1,115200) #设置串口号1和波特率
+motor = Stepmotor(1, 0)
+
+laser_pid = PID(kp=-2, ki=0, kd=0, setpoint=320, output_limits=(-20,20))
 
 #sensor init
 sensor = Sensor(width=1280, height=960) #Build a camera object and set the camera image length and width to 4:3
@@ -73,22 +59,17 @@ while True:
     img.binary([(29, 72)], invert = True)
     img.erode(2)
     img.dilate(2)
-    rects = img.find_rects(roi=(160, 0, 480, 240), threshold=200000)
+    rects = img.find_rects(threshold=200000)
     if rects:
         target_rect = max(rects, key = lambda b: b[4])#提取最大矩形
-        print(target_rect)
         corners = target_rect.corners()
-        for corner in corners:
-            target_corners.append((corner[0], corner[1]))
-        img_show.rotation_corr(corners = target_corners)
-        img_show.gaussian(0)
-        target_blobs = img_show.find_blobs(target_threshold, invert=False, roi=(80, 40, 480, 400), merge=False) #检测指定色块，需给定threshold和invert
-        if target_blobs:
-            target_blob = max(target_blobs, key = lambda b: b[4])#提取最大色块
-            img_show.draw_cross(target_blob.cx(), target_blob.cy(), color=(0,255,0))#中心画十字
-            img_show.draw_rectangle(target_blob[0:4], color=(0, 255, 255))#周围画边框
-            img_show.draw_cross((320, 240))
-            print(target_blob.cx(), target_blob.cy())#打印色块中心位置
+        rect_center_point = (int((corners[0][0]+corners[2][0])/2), int((corners[0][1]+corners[2][1])/2))
+        print(rect_center_point)
+        img_show.draw_cross(rect_center_point, color=(255, 255, 255))
+        output = laser_pid.compute(rect_center_point[0])
+        print(output)
+        print(laser_pid._last_error)
+        motor.position_mode(2, round(output))
 
     target_corners = []
     gc.collect()

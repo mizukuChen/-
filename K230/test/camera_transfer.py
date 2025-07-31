@@ -22,13 +22,13 @@ def transfer_vector(uart, vector_x, vector_y):
     # 使用struct.pack将short整数（有符号2字节）打包为二进制数据，使用大端序（little_endian）（'<'）
     packed_data_x = struct.pack('<h', vector_x)
     packed_data_y = struct.pack('<h', vector_y)
-    # print(packed_data_x) # debug
-    # print(packed_data_y) # debug
+    print(packed_data_x) # debug
+    print(packed_data_y) # debug
     # 创建一个100字节的缓冲区，并将打包后的数据复制到开头
     send_buf = bytearray(4)
     send_buf[0:2] = packed_data_x[0:2]
     send_buf[2:4] = packed_data_y[0:2]
-    # print(send_buf) # debug
+    print(send_buf) # debug
     uart.write(send_buf[0:4])
 
 
