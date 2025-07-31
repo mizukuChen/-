@@ -8,6 +8,8 @@ from machine import Pin
 from machine import FPIOA
 from machine import UART
 
+import math
+
 from time import sleep_ms
 
 
@@ -34,7 +36,18 @@ def transfer_vector(uart, vector_x, vector_y):
     # print(send_buf) # debug
     uart.write(send_buf[0:4])
 
+def projective_circle(corners, radius, angle):
+    rsin = radius * math.sin(angle)
+    rcos = radius * math.cos(angle)
+    pos = (0.5 - rcos) * (0.5 + rsin) * corners[0] +\
+          (0.25 - rcos - rsin)        * corners[1] +\
+          (0.5 + rcos) * (0.5 - rsin) * corners[2] +\
+          (0.5 + rcos) * (0.5 + rsin) * corners[3]
+    return pos
 
+def projective_center(corners):
+    pos = sum(corners[:4]) / 4
+    return pos
 
 #init
 #UART init
