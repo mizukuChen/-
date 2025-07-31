@@ -89,9 +89,6 @@ while True:
             img_show.draw_line(rect_point_mid[i][0], rect_point_mid[i][1], rect_point_mid[i+1][0], rect_point_mid[i+1][1], color=(255,255,255))
         img_show.draw_line(rect_point_mid[3][0], rect_point_mid[3][1], rect_point_mid[0][0], rect_point_mid[0][1], color=(255,255,255))
 
-    rect_point = [[],[]]
-    rect_point_mid = []
-
     gc.collect()
     print(clock.fps()) #FPS
     Display.show_image(img_show, x=round((800-sensor.width())/2),y=round((480-sensor.height())/2))

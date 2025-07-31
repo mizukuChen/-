@@ -17,7 +17,7 @@ class Stepmotor:
         :param uart: UART对象，用于通信
         :param motor_id: 电机ID (0-3)
         """
-        self.uart = machine.UART(uart, baudrate=115200, timeout=50)
+        self.uart = machine.UART(uart, baudrate=9600, timeout=50)
         self.motor_id = motor_id
 
     @staticmethod
@@ -217,5 +217,7 @@ class Stepmotor:
         self.uart.write(tx_data)
 
 
-motor = Stepmotor(1, 0)
-motor.speed_mode(0 , 1)
+#motor = Stepmotor(1, 0)
+#motor.speed_mode(0 , 1)
+#while True:
+#    motor.speed_mode(1, 1)

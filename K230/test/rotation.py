@@ -19,7 +19,7 @@ laser_combine_threshold = [(22, 100, 6, 127, -47, 39), (32, 100, 9, 127, -22, -1
 black_line_threshold =[(100, 16, -128, 127, -128, 127)] #invert=True
 
 rect_point = [[],[]]
-rect_point_mid = []
+rect_point_mid = [(265, 150), (389, 199), (422, 115), (299, 62)]
 
 def transfer_vector(uart, vector_x, vector_y):
     # 使用struct.pack将short整数（有符号2字节）打包为二进制数据，使用大端序（little_endian）（'<'）
@@ -48,7 +48,7 @@ sensor = Sensor(width=1280, height=960) #Build a camera object and set the camer
 sensor.reset() # reset the Camera
 sensor.set_framesize(chn=CAM_CHN_ID_0, width=640, height=480) #Set the frame size to resolution (320x240), default channel 0
 sensor.set_framesize(chn=CAM_CHN_ID_1, width=640, height=480)
-sensor.set_pixformat(Sensor.RGB565, chn=CAM_CHN_ID_0) #Set the output image format, channel 0
+sensor.set_pixformat(Sensor.GRAYSCALE, chn=CAM_CHN_ID_0) #Set the output image format, channel 0
 sensor.set_pixformat(Sensor.GRAYSCALE, chn=CAM_CHN_ID_1)
 
 #display init
@@ -71,27 +71,42 @@ while True:
     # img.binary([(29, 72)], invert = False)
     # img.erode(2)
     # img.dilate(0)
-    rects = img.find_rects(roi=(160, 0, 480, 240), threshold=60000)
-    for index, rect in enumerate(rects):
-        corners = rect.corners() # debug
-        for corner in corners:
-            img_show.draw_cross(corner, color=(255,0,0))
-            if len(rects) == 2:
-                rect_point[index].append(corner)
-    img.rotation_corr(corners = (rects[0].corners[:4]))
-    #if len(rects) == 2:
-    #    for i in range(4):
-    #        x_mid = int((rect_point[0][i][0]+rect_point[1][i][0])/2)
-    #        y_mid = int((rect_point[0][i][1]+rect_point[1][i][1])/2)
-    #        rect_point_mid.append((x_mid, y_mid))
-    #        img_show.draw_cross(int(x_mid), int(y_mid), color=(255,255,255))
-    #    print(rect_point_mid)
-    #    for i in range(3):
-    #        img_show.draw_line(rect_point_mid[i][0], rect_point_mid[i][1], rect_point_mid[i+1][0], rect_point_mid[i+1][1], color=(255,255,255))
-    #    img_show.draw_line(rect_point_mid[3][0], rect_point_mid[3][1], rect_point_mid[0][0], rect_point_mid[0][1], color=(255,255,255))
+#    rects = img.find_rects(roi=(160, 0, 480, 240), threshold=60000)
+#    for index, rect in enumerate(rects):
+#        corners = rect.corners() # debug
+#        for corner in corners:
+#            img_show.draw_cross(corner, color=(255,0,0))
+#            if len(rects) == 2:
+#                rect_point[index].append(corner)
+#    if len(rects) == 2:
+#        for i in range(4):
+#            x_mid = int((rect_point[0][i][0]+rect_point[1][i][0])/2)
+#            y_mid = int((rect_point[0][i][1]+rect_point[1][i][1])/2)
+#            rect_point_mid.append((x_mid, y_mid))
+#            img_show.draw_cross(int(x_mid), int(y_mid), color=(255,255,255))
+#        print(rect_point_mid)
+#        for i in range(3):
+#            img_show.draw_line(rect_point_mid[i][0], rect_point_mid[i][1], rect_point_mid[i+1][0], rect_point_mid[i+1][1], color=(255,255,255))
+#        img_show.draw_line(rect_point_mid[3][0], rect_point_mid[3][1], rect_point_mid[0][0], rect_point_mid[0][1], color=(255,255,255))
+#
+#    if rect_point_mid:
+#        #img_show.rotation_corr(corners = rect_point_mid)
+#        #img.rotation_corr(corners = rect_point_mid)
+#        img.binary([(113, 255)], invert=True)
+#        #img.erode(1)
+#        #img.dilate(3)
+#        for l in img.find_line_segments(max_theta_difference=5):
+#
+#            img_show.draw_line(l.line(), color = (0, 0, 0), thickness=2)
+#            print(l)
 
-    rect_point = [[],[]]
-    rect_point_mid = []
+#    rect_point = [[],[]]
+#    rect_point_mid = []
+
+    img.binary([(113, 255)], invert=True)
+    for rect in img.find_rects():
+        for corner in rect.corners():
+            img_show.draw_cross(corner, color=(255,0,0))
 
     gc.collect()
     print(clock.fps()) #FPS
