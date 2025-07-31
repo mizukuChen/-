@@ -1,119 +1,117 @@
+import time, os, sys, gc, struct, math
+
+from media.sensor import * #Import the sensor module and use the camera API
+from media.display import * #Import the display module and use display API
+from media.media import * #Import the media module and use meida API
+
 from machine import Pin
 from machine import FPIOA
-import time
+from machine import UART
+
+from time import sleep_ms
 
 
 
+#user constant
+laser_threshold = [(32, 100, 9, 127, -22, -1)] #invert=False
+laser_on_line_threshold =[(22, 100, 6, 127, -47, 39)] #invert=False
+laser_combine_threshold = [(22, 100, 6, 127, -47, 39), (32, 100, 9, 127, -22, -1)]#invert=False
+black_line_threshold =[(100, 16, -128, 127, -128, 127)] #invert=True
+target_threshold = [(66, 100, -5, 4, -1, 32)]
 
-# 实例化FPIOA
+rect_point = [[],[]]
+rect_point_mid = []
+
+def transfer_vector(uart, vector_x, vector_y):
+    # 使用struct.pack将short整数（有符号2字节）打包为二进制数据，使用大端序（little_endian）（'<'）
+    packed_data_x = struct.pack('<h', vector_x)
+    packed_data_y = struct.pack('<h', vector_y)
+    # print(packed_data_x) # debug
+    # print(packed_data_y) # debug
+    # 创建一个100字节的缓冲区，并将打包后的数据复制到开头
+    send_buf = bytearray(4)
+    send_buf[0:2] = packed_data_x[0:2]
+    send_buf[2:4] = packed_data_y[0:2]
+    # print(send_buf) # debug
+    uart.write(send_buf[0:4])
+
+
+
+#init
+#UART init
 fpioa = FPIOA()
+fpioa.set_function(3,FPIOA.UART1_TXD)
+fpioa.set_function(4,FPIOA.UART1_RXD)
+uart=UART(UART.UART1,115200) #设置串口号1和波特率
 
-#将所需引脚配置为普通GPIO
-fpioa.set_function(52,FPIOA.GPIO52)
-fpioa.set_function(51,FPIOA.GPIO51)
-fpioa.set_function(50,FPIOA.GPIO50)
-fpioa.set_function(49,FPIOA.GPIO49)
-fpioa.set_function(48,FPIOA.GPIO48)
-fpioa.set_function(47,FPIOA.GPIO47)
-fpioa.set_function(46,FPIOA.GPIO46)
-fpioa.set_function(45,FPIOA.GPIO45)
+#sensor init
+sensor = Sensor(width=1280, height=960) #Build a camera object and set the camera image length and width to 4:3
+sensor.reset() # reset the Camera
+sensor.set_framesize(chn=CAM_CHN_ID_0, width=640, height=480) #Set the frame size to resolution (320x240), default channel 0
+sensor.set_framesize(chn=CAM_CHN_ID_1, width=640, height=480)
+sensor.set_pixformat(Sensor.RGB565, chn=CAM_CHN_ID_0) #Set the output image format, channel 0
+sensor.set_pixformat(Sensor.GRAYSCALE, chn=CAM_CHN_ID_1)
 
-# 常量定义
-STEPS_PER_CIRCLE = 4096  # 每圈步数
-DEG_PER_STEP = 360.0 / STEPS_PER_CIRCLE  # 每步角度
+#display init
+Display.init(Display.ST7701, to_ide=True) #Use 3.5-inch mipi screen and IDE buffer to display images at the same time
 
-# 步进序列 (8步驱动)
-STEP_SEQUENCE = (
-    (1, 0, 0, 0),
-    (1, 1, 0, 0),
-    (0, 1, 0, 0),
-    (0, 1, 1, 0),
-    (0, 0, 1, 0),
-    (0, 0, 1, 1),
-    (0, 0, 0, 1),
-    (1, 0, 0, 1)
-)
+#MediaManager init
+MediaManager.init() #Initialize the media resource manager
 
-class Stepper:
-    def __init__(self, Xin_pins, Yin_pins):
-        """
-        初始化步进电机控制器
-        :param Xin_pins: 横向电机引脚列表 [IN1, IN2, IN3, IN4]
-        :param Yin_pins: 纵向电机引脚列表 [IN1, IN2, IN3, IN4]
-        """
-        # 初始化横向电机引脚
-        self.Xin = [Pin(pin, Pin.OUT) for pin in Xin_pins]
-        # 初始化纵向电机引脚
-        self.Yin = [Pin(pin, Pin.OUT) for pin in Yin_pins]
-        # 当前步进位置
-        self.step_pos = [0, 0]  # [横向位置, 纵向位置]
+#sensor run
+sensor.run() #Start the camera
 
-    def _write_pins(self, pins, states):
-        """设置指定引脚组的状态"""
-        for pin, state in zip(pins, states):
-            pin.value(state)
+clock = time.clock()
 
-    def step(self, motor_idx, steps, delay_ms):
-        """
-        驱动步进电机移动指定步数
-        :param motor_idx: 电机索引 (0=横向, 1=纵向)
-        :param steps: 步数 (正数=正向, 负数=反向)
-        :param delay_ms: 步间延迟(毫秒)，控制速度
-        """
-        direction = 1 if steps >= 0 else -1
-        steps = abs(steps)
-
-        for _ in range(steps):
-            # 获取当前步进状态
-            current_step = self.step_pos[motor_idx]
-
-            # 设置对应电机
-            if motor_idx == 0:  # 横向电机
-                self._write_pins(self.Xin, STEP_SEQUENCE[current_step])
-            else:  # 纵向电机
-                self._write_pins(self.Yin, STEP_SEQUENCE[current_step])
-
-            # 步间延迟
-            time.sleep_ms(delay_ms)
-
-            # 更新步进位置 (确保在0-7范围内)
-            self.step_pos[motor_idx] = (current_step + direction) % 8
-
-    def turn_angle(self, motor_idx, angle_deg, delay_ms):
-        """
-        旋转指定角度
-        :param motor_idx: 电机索引 (0=横向, 1=纵向)
-        :param angle_deg: 旋转角度(度)
-        :param delay_ms: 步间延迟(毫秒)
-        """
-        steps = int(angle_deg / DEG_PER_STEP + 0.5)
-        self.step(motor_idx, steps, delay_ms)
-
-    def turn_circle(self, motor_idx, circles, delay_ms):
-        """
-        旋转指定圈数
-        :param motor_idx: 电机索引 (0=横向, 1=纵向)
-        :param circles: 圈数 (正数=正向, 负数=反向)
-        :param delay_ms: 步间延迟(毫秒)
-        """
-        steps = int(circles * STEPS_PER_CIRCLE)
-        self.step(motor_idx, steps, delay_ms)
-
-
-Xin = [2,5,6,42]
-Yin = [32,33,34,35]
-fpioa.set_function(32,FPIOA.GPIO32)
-fpioa.set_function(33,FPIOA.GPIO33)
-fpioa.set_function(34,FPIOA.GPIO34)
-fpioa.set_function(35,FPIOA.GPIO35)
-fpioa.set_function(2,FPIOA.GPIO2)
-fpioa.set_function(5,FPIOA.GPIO5)
-fpioa.set_function(6,FPIOA.GPIO6)
-fpioa.set_function(42,FPIOA.GPIO42)
-#fpioa.set_function(13,FPIOA.GPIO13)
-stepper = Stepper(Xin,Yin)
+#infinite loop
 while True:
-    stepper.turn_angle(1, 30, 1)
-    stepper.turn_angle(0, 30, 1)
-    time.sleep(2)
-    pass
+    clock.tick()
+
+    img_show = sensor.snapshot(chn=CAM_CHN_ID_0)
+    img = sensor.snapshot(chn=CAM_CHN_ID_1)
+    # img.binary([(29, 72)], invert = False)
+    # img.erode(2)
+    # img.dilate(0)
+    rects = img.find_rects(roi=(160, 0, 480, 240), threshold=60000)
+    for index, rect in enumerate(rects):
+        corners = rect.corners() # debug
+        for corner in corners:
+            img_show.draw_cross(corner, color=(255,0,0))
+            if len(rects) == 2:
+                rect_point[index].append(corner)
+    if len(rects) == 2:
+        for i in range(4):
+            x_mid = int((rect_point[0][i][0]+rect_point[1][i][0])/2)
+            y_mid = int((rect_point[0][i][1]+rect_point[1][i][1])/2)
+            rect_point_mid.append((x_mid, y_mid))
+            img_show.draw_cross(int(x_mid), int(y_mid), color=(255,255,255))
+        for i in range(3):
+            img_show.draw_line(rect_point_mid[i][0], rect_point_mid[i][1], rect_point_mid[i+1][0], rect_point_mid[i+1][1], color=(255,255,255))
+        img_show.draw_line(rect_point_mid[3][0], rect_point_mid[3][1], rect_point_mid[0][0], rect_point_mid[0][1], color=(255,255,255))
+
+    if rect_point_mid:
+        img_show.rotation_corr(corners = rect_point_mid)
+        #img_show.gaussian(2)
+        target_blobs = img_show.find_blobs(target_threshold, invert=False, roi=(80, 40, 480, 400), merge=True) #检测指定色块，需给定threshold和invert
+        if target_blobs:
+            target_blob = max(target_blobs, key = lambda b: b[4])#提取最大色块
+            img_show.draw_cross(target_blob.cx(), target_blob.cy(), color=(0,255,0))#中心画十字
+            img_show.draw_rectangle(target_blob[0:4], color=(0, 255, 255))#周围画边框
+            img_show.draw_cross((320, 240))
+            print(target_blob.cx(), target_blob.cy())#打印色块中心位置
+        x = math.sin(9)
+        print(x)
+        #for c in img_show.find_circles(roi=(60, 40, 520, 400), threshold = 2000, x_margin = 3, y_margin= 3,
+        #                          r_margin = 3,r_min = 2, r_max = 100, r_step = 2):
+        #    #Draw a red circle as an indication
+        #    img_show.draw_circle(c.x(), c.y(), c.r(), color = (0, 0, 0),thickness=2)
+        #    print(c)
+
+    rect_point = [[],[]]
+    rect_point_mid = []
+
+    gc.collect()
+    #print(clock.fps()) #FPS
+    fps_text = "{}".format(clock.fps())
+    img_show.draw_string_advanced(32, 40, 20, fps_text)
+    Display.show_image(img_show, x=round((800-sensor.width())/2),y=round((480-sensor.height())/2))

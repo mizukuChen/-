@@ -65,7 +65,7 @@ uart=UART(UART.UART1,115200) #设置串口号1和波特率
 while True:
     clock.tick()
     img = sensor.snapshot()
-    target_blobs = img.find_blobs(laser_combine_threshold, invert=False, roi=(160, 120, 320, 240)) #检测指定色块，需给定threshold和invert
+    target_blobs = img.find_blobs(black_line_threshold, invert=True, roi=(160, 120, 320, 240)) #检测指定色块，需给定threshold和invert
     if target_blobs:
         target_blob = max(target_blobs, key = lambda b: b[4])#提取最大色块
         img.draw_cross(target_blob.cx(), target_blob.cy(), color=(0,0,0))#中心画十字
