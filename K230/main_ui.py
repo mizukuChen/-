@@ -7,6 +7,7 @@ from media.sensor import *
 from media.display import *
 from media.media import *
 from machine import TOUCH   # 触摸系统
+from machine import Timer
 
 from time import sleep_ms
 
@@ -61,6 +62,11 @@ def load_config():
     except Exception as e:
         print(f"加载配置失败: {e}")
         return [0,0,0,0,0,0], [0,0]
+    
+def set_flag(tim):
+    global tim_flag
+    tim_flag += 1
+    return
 
 LAB, Gray = load_config()
 LAB_test = LAB.copy()
@@ -73,6 +79,13 @@ try:
     laser_pid_y = PID(kp=-2, ki=0, kd=0, setpoint=320, output_limits=(-20,20))
 
     print("camera_test")
+
+    tim_flag = 0
+
+    tim = machine.Timer(1)
+
+    tim.init(mode=Timer.PERIODIC, period=50, callback=set_flag)
+
     sensor = Sensor(width=1280, height=960)
     sensor.reset()
     sensor.set_framesize(chn=CAM_CHN_ID_0, width=640, height=480)
@@ -214,6 +227,12 @@ try:
             Display_Words(img_show, 3, "调参模式")
             Display_Words(img_show, 4, "LAB调节")
             Display_Words(img_show, 5, "灰度调节")
+            Display_Words(img_show, 6, "任务1")
+            Display_Words(img_show, 7, "任务2")
+            Display_Words(img_show, 8, "任务3")
+            Display_Words(img_show, 9, "拓展任务1")
+            Display_Words(img_show, 10, "拓展任务2")
+            Display_Words(img_show, 11, "拓展任务3")
 
         if (flag == 3):
             Draw_Menu(img_show)
@@ -298,7 +317,8 @@ try:
         img_show.draw_string_advanced(130, 320, 30, "G_real:" + str(Gray), color=(0,255,255))
 
         #-----尾处理-----
-        time.sleep_ms(5)
+        if (flag >= 6):
+            time.sleep_ms(5)
         img_show.draw_string_advanced(250, 80, 30, "flag: {}".format(flag), color=(0,255,255))
         img_show.draw_string_advanced(250, 40, 30, "fps: {}".format(clock.fps()), color=(0,255,255))
         Display.show_image(img_show, x=round((800-sensor.width())/2), y=round((480-sensor.height())/2))

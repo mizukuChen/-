@@ -7,6 +7,7 @@ from media.media import * #Import the media module and use meida API
 from machine import Pin
 from machine import FPIOA
 from machine import UART
+from machine import Timer
 
 from time import sleep_ms
 
@@ -37,9 +38,16 @@ def transfer_vector(uart, vector_x, vector_y):
     # print(send_buf) # debug
     uart.write(send_buf[0:4])
 
-
+def set_flag(tim):
+    global tim_flag
+    tim_flag += 1
+    return
 
 #init
+
+tim_flag = 0
+
+tim = machine.Timer(1)
 
 motor = Stepmotor(1, 0)
 
@@ -64,9 +72,13 @@ sensor.run() #Start the camera
 
 clock = time.clock()
 
+tim.init(mode=Timer.PERIODIC, period=50, callback=set_flag)
+
 #infinite loop
 while True:
     clock.tick()
+
+    print(tim_flag)
 
     img_show = sensor.snapshot(chn=CAM_CHN_ID_0)
     img = sensor.snapshot(chn=CAM_CHN_ID_1)
