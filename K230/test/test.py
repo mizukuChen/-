@@ -10,7 +10,9 @@ from machine import UART
 
 from time import sleep_ms
 
+from MKS32C_uart import Stepmotor
 
+from PID import PID
 
 #user constant
 laser_threshold = [(32, 100, 9, 127, -22, -1)] #invert=False
@@ -38,11 +40,10 @@ def transfer_vector(uart, vector_x, vector_y):
 
 
 #init
-#UART init
-fpioa = FPIOA()
-fpioa.set_function(3,FPIOA.UART1_TXD)
-fpioa.set_function(4,FPIOA.UART1_RXD)
-uart=UART(UART.UART1,115200) #设置串口号1和波特率
+
+motor = Stepmotor(1, 0)
+
+laser_pid = PID(kp=0.2, ki=0, kd=0.05, setpoint=320, output_limits=(-20,20))
 
 #sensor init
 sensor = Sensor(width=1280, height=960) #Build a camera object and set the camera image length and width to 4:3
@@ -99,8 +100,11 @@ while True:
             img_show.draw_rectangle(target_blob[0:4], color=(0, 255, 255))#周围画边框
             img_show.draw_cross((320, 240))
             print(target_blob.cx(), target_blob.cy())#打印色块中心位置
-        x = math.sin(9)
-        print(x)
+            output = laser_pid.compute(target_blob.cx())
+            print(output)
+            print(laser_pid._last_error)
+            motor.position_mode(4, round(output))
+
         #for c in img_show.find_circles(roi=(60, 40, 520, 400), threshold = 2000, x_margin = 3, y_margin= 3,
         #                          r_margin = 3,r_min = 2, r_max = 100, r_step = 2):
         #    #Draw a red circle as an indication

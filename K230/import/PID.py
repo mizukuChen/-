@@ -8,6 +8,9 @@ class PID:
         self._last_error = 0
         self._integral = 0
 
+    def reset_setpoint(self, setpoint):
+        self.setpoint = setpoint
+
     def reset(self):
         self._last_error = 0
         self._integral = 0

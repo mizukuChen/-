@@ -87,6 +87,7 @@ while True:
     rects = img.find_rects(roi=(160, 0, 480, 240), threshold=60000)
     for index, rect in enumerate(rects):
         corners = rect.corners() # debug
+
         for corner in corners:
             img_show.draw_cross(corner, color=(255,0,0))
             if len(rects) == 2:
