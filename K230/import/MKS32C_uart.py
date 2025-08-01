@@ -216,6 +216,58 @@ class Stepmotor:
 
         self.uart.write(tx_data)
 
+    def set_zero_mode(self, mode):
+        """设置回零模式"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x90             # 功能码
+        tx_data[2] = mode         # 模式
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+    def set_zero_speed(self):
+        """设置零点"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x91             # 功能码
+        tx_data[2] = 00        # 方向
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)  
+
+    def set_zero_speed(self, speed):
+        """设置回零速度"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x92             # 功能码
+        tx_data[2] = speed         # 方向
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+    def set_zero_direct(self, direct):
+        """设置回零方向  0为顺时针"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x93             # 功能码
+        tx_data[2] = direct         # 方向
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+    def goto_zero(self):
+        """回到零点"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x94             # 功能码
+        tx_data[2] = 00         # 回零标志
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+    
+
+
 
 #motor = Stepmotor(1, 0)
 #motor.speed_mode(0 , 1)
