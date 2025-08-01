@@ -19,8 +19,12 @@ class Stepmotor:
         """
         self.uart = uart
         self.motor_id = motor_id
+        self.set_Motortype(ANGLE_MODE)
+        self.set_M_step(STEP_MODE)
 
     @staticmethod
+    '''运动控制模块'''
+
     def get_check_sum(data):
         """计算校验和（求和取低8位）"""
         return sum(data) & 0xFF
@@ -96,6 +100,10 @@ class Stepmotor:
 
         self.uart.write(tx_data)
 
+
+
+    '''位置信息读取模块'''
+
     def read_encoder(self):
         """读取编码器角度（0-360°）"""
         tx_data = bytearray([0xE0 + self.motor_id, 0x30, 0x00])
@@ -151,6 +159,10 @@ class Stepmotor:
 
         error_val = (rx_data[1] << 8) | rx_data[2]
         return error_val * 360.0 / 65536
+
+
+
+    '''运动参数设置模块'''
 
     def reset(self):
         """复位电机"""
@@ -213,6 +225,104 @@ class Stepmotor:
         tx_data[2] = (maxt >> 8) & 0xFF  # 高字节
         tx_data[3] = maxt & 0xFF         # 低字节
         tx_data[4] = self.get_check_sum(tx_data[:4])  # 校验和
+
+        self.uart.write(tx_data)
+
+
+
+    #归零模块
+
+    def set_zero_mode(self, mode):
+        """设置回零模式"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x90             # 功能码
+        tx_data[2] = mode         # 模式
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+    def set_zero_speed(self):
+        """设置零点"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x91             # 功能码
+        tx_data[2] = 00        # 方向
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)  
+
+    def set_zero_speed(self, speed):
+        """设置回零速度"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x92             # 功能码
+        tx_data[2] = speed         # 方向
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+    def set_zero_direct(self, direct):
+        """设置回零方向  0为顺时针"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x93             # 功能码
+        tx_data[2] = direct         # 方向
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+    def goto_zero(self):
+        """回到零点"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x94             # 功能码
+        tx_data[2] = 00         # 回零标志
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+
+
+    '''基本参数设置模组'''
+    
+    def set_Motortype(self, de_angle):
+        """设置电机单步角度"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x81             # 功能码
+        tx_data[2] = 0x00 if de_angle == 0.9 else 0x01       # 单步角度
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+    def set_current(self, current):
+        """设置电流挡位"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x82             # 功能码
+        tx_data[2] = current       # 电流挡位
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+    def set_M_step(self, M_step):
+        """设置细分"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x84             # 功能码
+        tx_data[2] = M_step       # 细分数
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
+
+        self.uart.write(tx_data)
+
+    def set_Dir(self, Dir):
+        """设置旋转正方向"""
+        tx_data = bytearray(4)
+        tx_data[0] = 0xE0 + self.motor_id  # 地址
+        tx_data[1] = 0x86             # 功能码
+        tx_data[2] = Dir       # 细分数
+        tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
 
         self.uart.write(tx_data)
 
