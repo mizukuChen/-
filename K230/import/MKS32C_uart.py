@@ -4,7 +4,7 @@ import struct
 class Stepmotor:
     # 类常量（所有实例共享）
     ANGLE_MODE = 1.8
-    STEP_MODE = 16
+    STEP_MODE = 256
     STEPS_PER_CIRCLE = int(360 / ANGLE_MODE * STEP_MODE)
     DEG_PER_STEP = 1.0 / ANGLE_MODE * STEP_MODE
     TURN_FORWARD = 1
@@ -17,7 +17,7 @@ class Stepmotor:
         :param uart: UART对象，用于通信
         :param motor_id: 电机ID (0-3)
         """
-        self.uart = machine.UART(uart, baudrate=9600, timeout=50)
+        self.uart = uart
         self.motor_id = motor_id
 
     @staticmethod

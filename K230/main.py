@@ -51,22 +51,31 @@ angle = 0
 
 #laser init
 fpioa = FPIOA()
-fpioa.set_function(52,FPIOA.GPIO52)
-laser=Pin(52,Pin.OUT) #构建led对象，GPIO52,输出
+fpioa.set_function(42,FPIOA.GPIO42)
+laser=Pin(42,Pin.OUT) #构建led对象，GPIO52,输出
+laser.off()
+
+uart3 = machine.UART(3, baudrate=9600)
+
+fpioa.set_function(3,FPIOA.UART1_TXD)
+fpioa.set_function(4,FPIOA.UART1_RXD)
+uart1 = UART(UART.UART1, 9600)
 
 #motor init
-motor_x = Stepmotor(1, 0)
-motor_y = Stepmotor(2, 0)
+motor_x = Stepmotor(uart3, 0)
+motor_y = Stepmotor(uart1, 0)
 
 #pid init
-laser_pid_x = PID(kp=-2, ki=0, kd=0, setpoint=320, output_limits=(-20,20))
-laser_pid_y = PID(kp=-2, ki=0, kd=0, setpoint=320, output_limits=(-20,20))
+laser_pid_x = PID(kp=-1.5, ki=-0, kd=-0.8, setpoint=320, output_limits=(-20,20))
+laser_pid_y = PID(kp=   2, ki=0, kd=0, setpoint=320, output_limits=(-20,20))
 
 #sensor init
 sensor = Sensor(width=1920, height=1080) #Build a camera object and set the camera image length and width to 4:3
 sensor.reset() # reset the Camera
-sensor.set_framesize(chn=CAM_CHN_ID_0, width=640, height=480) #Set the frame size to resolution (320x240), default channel 0
-sensor.set_framesize(chn=CAM_CHN_ID_1, width=640, height=480)
+sensor.set_hmirror(True)
+sensor.set_vflip(True)
+sensor.set_framesize(chn=CAM_CHN_ID_0, width=640, height=360) #Set the frame size to resolution (320x240), default channel 0
+sensor.set_framesize(chn=CAM_CHN_ID_1, width=640, height=360)
 sensor.set_pixformat(Sensor.RGB565, chn=CAM_CHN_ID_0) #Set the output image format, channel 0
 sensor.set_pixformat(Sensor.GRAYSCALE, chn=CAM_CHN_ID_1)
 
@@ -99,11 +108,16 @@ while True:
             img_show.draw_cross(corner, color=(255, 0, 0))
         rect_center_point = (int((corners[0][0]+corners[1][0]+corners[2][0]+corners[3][0])/4), int((corners[0][1]+corners[1][1]+corners[2][1]+corners[3][1])/4))
         img_show.draw_cross(rect_center_point, color=(255, 0, 0))
-        laser_pid_x.reset_setpoint(240)
+        if (abs(rect_center_point[0]-18-320)<20):
+            laser.on()
+            motor_x.position_mode(2, 0)
+            break
         laser_pid_x.reset_setpoint(320)
+        laser_pid_y.reset_setpoint(280)
         output_x = laser_pid_x.compute(rect_center_point[0])
         output_y = laser_pid_y.compute(rect_center_point[1])
-        motor_x.position_mode(2, round(output_x))
+        print(output_x, output_y)
+        motor_x.position_mode(4, round(output_x))
         motor_y.position_mode(2, round(output_y))
         #for i in range(100):
         #    angle = 2*(math.pi)/100*i
@@ -156,3 +170,6 @@ while True:
     fps_text = "{}".format(clock.fps())
     img_show.draw_string_advanced(32, 40, 20, fps_text)
     Display.show_image(img_show, x=round((800-sensor.width())/2),y=round((480-sensor.height())/2))
+
+while True:
+    pass
