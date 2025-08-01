@@ -1,4 +1,4 @@
-import time, os, sys, gc, struct
+import time, os, sys, gc, struct, math
 
 from media.sensor import * #Import the sensor module and use the camera API
 from media.display import * #Import the display module and use display API
@@ -14,6 +14,24 @@ from MKS32C_uart import Stepmotor
 
 from PID import PID
 
+def projective_circle(corners, radius_a, radius_b, angle, delta_x, delta_y):
+    rsin = radius_b * math.sin(angle) + delta_x
+    rcos = radius_a * math.cos(angle) + delta_y
+    alter_A = (0.5 - rcos) * (0.5 - rsin)
+    alter_B = (0.5 + rcos) * (0.5 - rsin)
+    alter_C = (0.5 + rcos) * (0.5 + rsin)
+    alter_D = (0.5 - rcos) * (0.5 + rsin)
+    pos_x = alter_D * corners[0][0] +\
+            alter_C * corners[1][0] +\
+            alter_B * corners[2][0] +\
+            alter_A * corners[3][0]
+
+    pos_y = alter_D * corners[0][1] +\
+            alter_C * corners[1][1] +\
+            alter_B * corners[2][1] +\
+            alter_A * corners[3][1]
+
+    return (round(pos_x), round(pos_y))
 
 #user constant
 laser_threshold = [(32, 100, 9, 127, -22, -1)] #invert=False
@@ -26,6 +44,8 @@ rect_point = [[],[]]
 rect_point_mid = []
 target_corners = []
 
+angle = 0
+
 #init
 motor = Stepmotor(1, 0)
 
@@ -36,7 +56,7 @@ sensor = Sensor(width=1280, height=960) #Build a camera object and set the camer
 sensor.reset() # reset the Camera
 sensor.set_framesize(chn=CAM_CHN_ID_0, width=640, height=480) #Set the frame size to resolution (320x240), default channel 0
 sensor.set_framesize(chn=CAM_CHN_ID_1, width=640, height=480)
-sensor.set_pixformat(Sensor.GRAYSCALE, chn=CAM_CHN_ID_0) #Set the output image format, channel 0
+sensor.set_pixformat(Sensor.RGB565, chn=CAM_CHN_ID_0) #Set the output image format, channel 0
 sensor.set_pixformat(Sensor.GRAYSCALE, chn=CAM_CHN_ID_1)
 
 #display init
@@ -56,20 +76,60 @@ while True:
 
     img_show = sensor.snapshot(chn=CAM_CHN_ID_0)
     img = sensor.snapshot(chn=CAM_CHN_ID_1)
-    img.binary([(29, 72)], invert = True)
-    img.erode(2)
-    img.dilate(2)
+    img.binary([(87, 255)], invert = True)
+    img.erode(1)
+    #img.dilate(2)
     rects = img.find_rects(threshold=200000)
     if rects:
         target_rect = max(rects, key = lambda b: b[4])#提取最大矩形
+        print(target_rect)
         corners = target_rect.corners()
-        rect_center_point = (int((corners[0][0]+corners[2][0])/2), int((corners[0][1]+corners[2][1])/2))
-        print(rect_center_point)
-        img_show.draw_cross(rect_center_point, color=(255, 255, 255))
-        output = laser_pid.compute(rect_center_point[0])
-        print(output)
-        print(laser_pid._last_error)
-        motor.position_mode(2, round(output))
+        for corner in corners:
+            img_show.draw_cross(corner, color=(255, 0, 0))
+        for i in range(100):
+            angle = 2*(math.pi)/100*i
+            pos = projective_circle(corners, 6/26.13, 6/17.20, angle)
+            img_show.draw_cross(pos, color=(255, 0, 0))
+        #rect_center_point = (int((corners[0][0]+corners[1][0]+corners[2][0]+corners[3][0])/4), int((corners[0][1]+corners[1][1]+corners[2][1]+corners[3][1])/4))
+        #print(rect_center_point)
+        #img_show.draw_cross(rect_center_point, color=(255, 255, 255))
+        #output = laser_pid.compute(rect_center_point[0])
+        #print(output)
+        #print(laser_pid._last_error)
+        #motor.position_mode(2, round(output))
+
+    #img_show = sensor.snapshot(chn=CAM_CHN_ID_0)
+    #img = sensor.snapshot(chn=CAM_CHN_ID_1)
+    #img.binary([(87, 255)], invert = True)
+    #img.erode(2)
+    #img.dilate(2)
+    #rects = img.find_rects(roi=(160, 0, 480, 240), threshold=200000)
+    #for index, rect in enumerate(rects):
+    #    corners = rect.corners() # debug
+    #    for i in range(100):
+    #       angle = 2*(math.pi)/100*i
+    #       pos = projective_circle(corners, 6/29.7, 6/21, angle)
+    #       img_show.draw_cross(pos, color=(255, 0, 0))
+#
+    #    print(corners)
+    #    for corner in corners:
+    #        img_show.draw_cross(corner, color=(255,0,0))
+    #        if len(rects) == 2:
+    #            rect_point[index].append(corner)
+    #if len(rects) == 2:
+    #    for i in range(4):
+    #        x_mid = int((rect_point[0][i][0]+rect_point[1][i][0])/2)
+    #        y_mid = int((rect_point[0][i][1]+rect_point[1][i][1])/2)
+    #        rect_point_mid.append((x_mid, y_mid))
+    #        img_show.draw_cross(int(x_mid), int(y_mid), color=(255,255,255))
+    #    print(rect_point_mid)
+    #    for i in range(3):
+    #        img_show.draw_line(rect_point_mid[i][0], rect_point_mid[i][1], rect_point_mid[i+1][0], rect_point_mid[i+1][1], color=(255,255,255))
+    #    img_show.draw_line(rect_point_mid[3][0], rect_point_mid[3][1], rect_point_mid[0][0], rect_point_mid[0][1], color=(255,255,255))
+
+
+    rect_point = [[],[]]
+    rect_point_mid = []
 
     target_corners = []
     gc.collect()

@@ -1,0 +1,17 @@
+import time, os, sys, gc, struct
+
+from media.sensor import * #Import the sensor module and use the camera API
+from media.display import * #Import the display module and use display API
+from media.media import * #Import the media module and use meida API
+
+from machine import Pin
+from machine import FPIOA
+from machine import UART
+
+from time import sleep_ms
+
+from MKS32C_uart import Stepmotor
+
+from PID import PID
+
+from jy61p import 

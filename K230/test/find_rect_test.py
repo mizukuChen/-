@@ -12,7 +12,8 @@ import math
 
 from time import sleep_ms
 
-
+import ulab.numpy as np
+import cv2
 
 #user constant
 laser_threshold = [(32, 100, 9, 127, -22, -1)] #invert=False
@@ -81,17 +82,53 @@ while True:
 
     img_show = sensor.snapshot(chn=CAM_CHN_ID_0)
     img = sensor.snapshot(chn=CAM_CHN_ID_1)
+    w = img.width()
+    h = img.height()
     # img.binary([(29, 72)], invert = False)
+    img_np = img.to_numpy_ref()
     # img.erode(2)
     # img.dilate(0)
-    rects = img.find_rects(roi=(160, 0, 480, 240), threshold=60000)
-    for index, rect in enumerate(rects):
-        corners = rect.corners() # debug
+    #rects = img.find_rects(roi=(160, 0, 480, 240), threshold=60000)
+    #for index, rect in enumerate(rects):
+    #    corners = rect.corners() # debug
+    #
+    #    for corner in corners:
+    #        img_show.draw_cross(corner, color=(255,0,0))
+    #        if len(rects) == 2:
+    #            rect_point[index].append(corner)
+    _, binary = cv2.threshold(img_np, 127, 255, cv2.THRESH_BINARY)
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        for corner in corners:
-            img_show.draw_cross(corner, color=(255,0,0))
-            if len(rects) == 2:
-                rect_point[index].append(corner)
+    rect_point = [[], []]
+    rect_point_mid = []
+
+    rects = []
+    for cnt in contours:
+        approx = cv2.approxPolyDP(cnt, 0.05 * cv2.arcLength(cnt, True), True)
+        if len(approx) == 4 and cv2.isContourConvex(approx):
+            area = cv2.contourArea(approx)
+            if area > 1000:  # 阈值避免噪点
+                rects.append(approx)
+
+    if len(rects) == 2:
+        for index, rect in enumerate(rects[:2]):
+            for pt in rect:
+                x, y = pt[0][0], pt[0][1]
+                rect_point[index].append((x, y))
+                img_show.draw_cross((x, y), color=(255, 0, 0))
+
+        for i in range(4):
+            x_mid = int((rect_point[0][i][0] + rect_point[1][i][0]) / 2)
+            y_mid = int((rect_point[0][i][1] + rect_point[1][i][1]) / 2)
+            rect_point_mid.append((x_mid, y_mid))
+            img_show.draw_cross((x_mid, y_mid), color=(255, 255, 255))
+
+        for i in range(4):
+            x0, y0 = rect_point_mid[i]
+            x1, y1 = rect_point_mid[(i + 1) % 4]
+            img_show.draw_line(x0, y0, x1, y1, color=(255, 255, 255))
+
+        print("中点列表:", rect_point_mid)
     if len(rects) == 2:
         for i in range(4):
             x_mid = int((rect_point[0][i][0]+rect_point[1][i][0])/2)
@@ -106,3 +143,49 @@ while True:
     gc.collect()
     print(clock.fps()) #FPS
     Display.show_image(img_show, x=round((800-sensor.width())/2),y=round((480-sensor.height())/2))
+
+
+#import numpy as np
+#import cv2
+#
+## 1. 获取图像宽高
+#w = img.width()
+#h = img.height()
+#
+## 2. 将灰度图img转为OpenCV格式（必须是灰度图，即set_pixformat为GRAYSCALE）
+#img_np = np.frombuffer(img.to_bytes(), dtype=np.uint8).reshape((h, w))
+#
+## 3. OpenCV处理：阈值 + 轮廓 + 矩形逼近
+_, binary = cv2.threshold(img_np, 127, 255, cv2.THRESH_BINARY)
+contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+rect_point = [[], []]
+rect_point_mid = []
+
+rects = []
+for cnt in contours:
+    approx = cv2.approxPolyDP(cnt, 0.05 * cv2.arcLength(cnt, True), True)
+    if len(approx) == 4 and cv2.isContourConvex(approx):
+        area = cv2.contourArea(approx)
+        if area > 1000:  # 阈值避免噪点
+            rects.append(approx)
+
+if len(rects) == 2:
+    for index, rect in enumerate(rects[:2]):
+        for pt in rect:
+            x, y = pt[0][0], pt[0][1]
+            rect_point[index].append((x, y))
+            img_show.draw_cross((x, y), color=(255, 0, 0))
+
+    for i in range(4):
+        x_mid = int((rect_point[0][i][0] + rect_point[1][i][0]) / 2)
+        y_mid = int((rect_point[0][i][1] + rect_point[1][i][1]) / 2)
+        rect_point_mid.append((x_mid, y_mid))
+        img_show.draw_cross((x_mid, y_mid), color=(255, 255, 255))
+
+    for i in range(4):
+        x0, y0 = rect_point_mid[i]
+        x1, y1 = rect_point_mid[(i + 1) % 4]
+        img_show.draw_line(x0, y0, x1, y1, color=(255, 255, 255))
+
+    print("中点列表:", rect_point_mid)
