@@ -55,16 +55,14 @@ fpioa.set_function(42,FPIOA.GPIO42)
 laser=Pin(42,Pin.OUT) #构建led对象，GPIO52,输出
 laser.off()
 
-fpioa.set_function(11, FPIOA.UART2_TXD)
-fpioa.set_function(12, FPIOA.UART2_RXD)
-uart2 = machine.UART(2, baudrate=25000)
+uart3 = machine.UART(3, baudrate=9600)
 
 fpioa.set_function(3,FPIOA.UART1_TXD)
 fpioa.set_function(4,FPIOA.UART1_RXD)
 uart1 = UART(UART.UART1, 9600)
 
 #motor init
-motor_x = Stepmotor(uart2, 0)
+motor_x = Stepmotor(uart3, 0)
 motor_y = Stepmotor(uart1, 0)
 
 #pid init
@@ -102,9 +100,7 @@ while True:
     img.erode(1)
     #img.dilate(2)
     rects = img.find_rects(threshold=200000)
-    #motor_x.speed_mode(1, 1)
     if rects:
-        #motor_x.speed_mode(1, 0)
         target_rect = max(rects, key = lambda b: b[4])#提取最大矩形
         print(target_rect)
         corners = target_rect.corners()

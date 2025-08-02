@@ -19,11 +19,8 @@ class Stepmotor:
         """
         self.uart = uart
         self.motor_id = motor_id
-        self.set_Motortype(ANGLE_MODE)
-        self.set_M_step(STEP_MODE)
 
     @staticmethod
-    '''运动控制模块'''
 
     def get_check_sum(data):
         """计算校验和（求和取低8位）"""
@@ -250,7 +247,7 @@ class Stepmotor:
         tx_data[2] = 00        # 方向
         tx_data[3] = self.get_check_sum(tx_data[:3])  # 校验和
 
-        self.uart.write(tx_data)  
+        self.uart.write(tx_data)
 
     def set_zero_speed(self, speed):
         """设置回零速度"""
@@ -285,7 +282,7 @@ class Stepmotor:
 
 
     '''基本参数设置模组'''
-    
+
     def set_Motortype(self, de_angle):
         """设置电机单步角度"""
         tx_data = bytearray(4)

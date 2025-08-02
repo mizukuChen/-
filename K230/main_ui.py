@@ -45,7 +45,7 @@ CONFIG_PATH = "/sdcard/config.json"
 
 # -----配置相关功能-----
 def save_config(LAB, Gray):
-    config = {"LAB": LAB, "Gray": Gray}
+    config = {"LAB": LAB, "Gray": Gray, "constant": [a, b, c, d]}
     try:
         with open(CONFIG_PATH, "w") as f:
             json.dump(config, f)
@@ -58,10 +58,10 @@ def load_config():
         with open(CONFIG_PATH, "r") as f:
             config = json.load(f)
         print("配置已加载")
-        return config.get("LAB", [0,0,0,0,0,0]), config.get("Gray", [0,0])
+        return config.get("LAB", [0,0,0,0,0,0]), config.get("Gray", [0,0]), config.get("constant", [0, 0, 0, 0])
     except Exception as e:
         print(f"加载配置失败: {e}")
-        return [0,0,0,0,0,0], [0,0]
+        return [0,0,0,0,0,0], [0,0], [0, 0, 0, 0]
     
 def set_flag(tim):
     global tim_flag
