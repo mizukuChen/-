@@ -17,7 +17,8 @@ class Stepmotor:
         :param uart: UART对象，用于通信
         :param motor_id: 电机ID (0-3)
         """
-        self.uart = uart
+
+        self.uart = machine.UART(uart, baudrate=25000)
         self.motor_id = motor_id
 
     @staticmethod
@@ -99,7 +100,7 @@ class Stepmotor:
 
 
 
-    '''位置信息读取模块'''
+
 
     def read_encoder(self):
         """读取编码器角度（0-360°）"""
@@ -159,7 +160,7 @@ class Stepmotor:
 
 
 
-    '''运动参数设置模块'''
+
 
     def reset(self):
         """复位电机"""
@@ -227,7 +228,7 @@ class Stepmotor:
 
 
 
-    #归零模块
+
 
     def set_zero_mode(self, mode):
         """设置回零模式"""
@@ -281,7 +282,7 @@ class Stepmotor:
 
 
 
-    '''基本参数设置模组'''
+
 
     def set_Motortype(self, de_angle):
         """设置电机单步角度"""
@@ -324,7 +325,7 @@ class Stepmotor:
         self.uart.write(tx_data)
 
 
-#motor = Stepmotor(1, 0)
-#motor.speed_mode(0 , 1)
+motor = Stepmotor(1, 0)
+motor.position_mode(10 , 40)
 #while True:
 #    motor.speed_mode(1, 1)

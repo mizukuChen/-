@@ -34,6 +34,23 @@ def projective_circle(corners, radius_a, radius_b, angle, delta_x, delta_y):
 
     return (round(pos_x), round(pos_y))
 
+def projective_delta(corners, delta_x, delta_y):
+    alter_A = (0.5 - delta_xs) * (0.5 - delta_y)
+    alter_B = (0.5 + delta_xs) * (0.5 - delta_y)
+    alter_C = (0.5 + delta_xs) * (0.5 + delta_y)
+    alter_D = (0.5 - delta_xs) * (0.5 + delta_y)
+    pos_x = alter_D * corners[0][0] +\
+            alter_C * corners[1][0] +\
+            alter_B * corners[2][0] +\
+            alter_A * corners[3][0]
+
+    pos_y = alter_D * corners[0][1] +\
+            alter_C * corners[1][1] +\
+            alter_B * corners[2][1] +\
+            alter_A * corners[3][1]
+
+    return (round(pos_x), round(pos_y))
+
 #user constant
 laser_threshold = [(32, 100, 9, 127, -22, -1)] #invert=False
 laser_on_line_threshold =[(22, 100, 6, 127, -47, 39)] #invert=False
