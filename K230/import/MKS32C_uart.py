@@ -17,7 +17,7 @@ class Stepmotor:
         :param uart: UART对象，用于通信
         :param motor_id: 电机ID (0-3)
         """
-        self.uart = machine.UART(uart, baudrate=9600, timeout=50)
+        self.uart = uart
         self.motor_id = motor_id
         self.set_Motortype(ANGLE_MODE)
         self.set_M_step(STEP_MODE)
