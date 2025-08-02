@@ -2,7 +2,7 @@
 # 2025.7.25
 
 # -----导入模块-----
-import time, os, sys, json, gc, struct
+import time, os, sys, json, gc, struct, math
 from media.sensor import *
 from media.display import *
 from media.media import *
@@ -34,7 +34,8 @@ sensor = None
 tp = TOUCH(0)
 flag = 1
 touch_counter = 0
-a, b, c, d = 10, 80, 10, 25
+delta_x, delta_y, c, d = 10, 80, 10, 25
+k = 0.2
 
 #threshold
 black_line_threshold = [(29, 72)]
@@ -43,9 +44,81 @@ laser_threshold = []
 # 配置文件路径
 CONFIG_PATH = "/sdcard/config.json"
 
+
+def projective_circle(corners, radius_a, radius_b, angle, delta_x, delta_y):
+    rsin = radius_b * math.sin(angle) + delta_x
+    rcos = radius_a * math.cos(angle) + delta_y
+    alter_A = (0.5 - rcos) * (0.5 - rsin)
+    alter_B = (0.5 + rcos) * (0.5 - rsin)
+    alter_C = (0.5 + rcos) * (0.5 + rsin)
+    alter_D = (0.5 - rcos) * (0.5 + rsin)
+    pos_x = alter_D * corners[0][0] +\
+            alter_C * corners[1][0] +\
+            alter_B * corners[2][0] +\
+            alter_A * corners[3][0]
+
+    pos_y = alter_D * corners[0][1] +\
+            alter_C * corners[1][1] +\
+            alter_B * corners[2][1] +\
+            alter_A * corners[3][1]
+
+    return (round(pos_x), round(pos_y))
+    
+
+
+def projective_delta(corners, delta_x, delta_y):
+    alter_A = (0.5 - delta_x) * (0.5 - delta_y)
+    alter_B = (0.5 + delta_x) * (0.5 - delta_y)
+    alter_C = (0.5 + delta_x) * (0.5 + delta_y)
+    alter_D = (0.5 - delta_x) * (0.5 + delta_y)
+    pos_x = alter_D * corners[0][0] +\
+            alter_C * corners[1][0] +\
+            alter_B * corners[2][0] +\
+            alter_A * corners[3][0]
+
+    pos_y = alter_D * corners[0][1] +\
+            alter_C * corners[1][1] +\
+            alter_B * corners[2][1] +\
+            alter_A * corners[3][1]
+
+    return (pos_x, pos_y)
+
+def projective_middle(corners):
+    pos_x = (corners[0][0] +corners[1][0] +corners[2][0] +corners[3][0])/4
+
+    pos_y = (corners[0][1] +corners[1][1] +corners[2][1] +corners[3][1])/4
+
+    return (round(pos_x), round(pos_y))
+
+def projective_delta_X(corners, delta_x, delta_y):
+    alter_A = (0.5 - delta_x) * (0.5 - delta_y)
+    alter_B = (0.5 + delta_x) * (0.5 - delta_y)
+    alter_C = (0.5 + delta_x) * (0.5 + delta_y)
+    alter_D = (0.5 - delta_x) * (0.5 + delta_y)
+    pos_x = alter_D * corners[0][0] +\
+            alter_C * corners[1][0] +\
+            alter_B * corners[2][0] +\
+            alter_A * corners[3][0]
+
+    return (pos_x)
+
+
+def projective_delta_Y(corners, delta_x, delta_y):
+    alter_A = (0.5 - delta_x) * (0.5 - delta_y)
+    alter_B = (0.5 + delta_x) * (0.5 - delta_y)
+    alter_C = (0.5 + delta_x) * (0.5 + delta_y)
+    alter_D = (0.5 - delta_x) * (0.5 + delta_y)
+    pos_y = alter_D * corners[0][1] +\
+            alter_C * corners[1][1] +\
+            alter_B * corners[2][1] +\
+            alter_A * corners[3][1]
+
+    return (pos_y)
+
+
 # -----配置相关功能-----
 def save_config(LAB, Gray):
-    config = {"LAB": LAB, "Gray": Gray, "constant": [a, b, c, d]}
+    config = {"LAB": LAB, "Gray": Gray, "constant": [delta_x, delta_y, c, d]}
     try:
         with open(CONFIG_PATH, "w") as f:
             json.dump(config, f)
@@ -68,12 +141,21 @@ def set_flag(tim):
     tim_flag += 1
     return
 
-LAB, Gray = load_config()
+LAB, Gray, [delta_x, delta_y, c, d] = load_config()
 LAB_test = LAB.copy()
 Gray_test = Gray.copy()
 
 try:
-    motor = Stepmotor(1, 0)
+    #Init
+
+    #laser init
+    fpioa = FPIOA()
+    fpioa.set_function(42,FPIOA.GPIO42)
+    laser=Pin(42,Pin.OUT) #构建led对象，GPIO52,输出
+    laser.off()
+
+    motor_x = Stepmotor(1, 0)
+    motor_y = Stepmotor(2, 0)
 
     laser_pid_x = PID(kp=-2, ki=0, kd=0, setpoint=320, output_limits=(-20,20))
     laser_pid_y = PID(kp=-2, ki=0, kd=0, setpoint=320, output_limits=(-20,20))
@@ -86,11 +168,18 @@ try:
 
     tim.init(mode=Timer.PERIODIC, period=50, callback=set_flag)
 
-    sensor = Sensor(width=1280, height=960)
+    fpioa = FPIOA()
+    fpioa.set_function(42,FPIOA.GPIO42)
+    laser=Pin(42,Pin.OUT) #构建led对象，GPIO52,输出
+    laser.off()
+
+    sensor = Sensor(width=1920, height=1080)
     sensor.reset()
-    sensor.set_framesize(chn=CAM_CHN_ID_0, width=640, height=480)
-    sensor.set_framesize(chn=CAM_CHN_ID_1, width=640, height=480)
-    sensor.set_pixformat(Sensor.GRAYSCALE, chn=CAM_CHN_ID_0)
+    sensor.set_hmirror(True)
+    sensor.set_vflip(True)
+    sensor.set_framesize(chn=CAM_CHN_ID_0, width=640, height=360)
+    sensor.set_framesize(chn=CAM_CHN_ID_1, width=640, height=360)
+    sensor.set_pixformat(Sensor.RGB565, chn=CAM_CHN_ID_0)
     sensor.set_pixformat(Sensor.RGB565, chn=CAM_CHN_ID_1)
 
     Display.init(Display.ST7701, to_ide=True)
@@ -235,13 +324,22 @@ try:
             Display_Words(img_show, 11, "拓展任务3")
 
         if (flag == 3):
+            rects = img.find_rects(threshold=250000)
+            if rects:
+                target_rect = max(rects, key = lambda b: b[4])#提取最大矩形
+                corners = target_rect.corners()
+                for i in range(100):
+                    angle = 2*math.pi*i/100
+                    projective_circle(corners, 6/26.13, 6/17.20, delta_x, delta_y)
+                    
+
             Draw_Menu(img_show)
             Display_Words(img_show, 1, "回到主页")
             Display_Words(img_show, 2, "回到菜单")
-            Display_Words(img_show, 3, "a--")
-            Display_Words(img_show, 4, "a++")
-            Display_Words(img_show, 5, "b--")
-            Display_Words(img_show, 6, "b++")
+            Display_Words(img_show, 3, "delta_x--")
+            Display_Words(img_show, 4, "delta_x++")
+            Display_Words(img_show, 5, "delta_y--")
+            Display_Words(img_show, 6, "delta_y++")
             Display_Words(img_show, 7, "c--")
             Display_Words(img_show, 8, "c++")
             Display_Words(img_show, 9, "d--")
@@ -288,12 +386,38 @@ try:
             Display_Words(img_show, 8, "保存灰度")
 
         if (flag == 6):
-            task1(img=img, img_show=img_show, laser_threshold=[], blackline_threshold=black_line_threshold,
-                  laser_pid_x=laser_pid_x, laser_pid_y=laser_pid_y, motor=motor)
+            img.binary(black_line_threshold, invert = True)
+            img.erode(1)
+            #img.dilate(2)
+            rects = img.find_rects(threshold=200000)
+            #motor_x.speed_mode(1, 20)
+            if rects:
+                #motor_x.speed_mode(1, 0)
+                target_rect = max(rects, key = lambda b: b[4])#提取最大矩形
+                #print(target_rect)
+                corners = target_rect.corners()
+                for corner in corners:
+                    img_show.draw_cross(corner, color=(255, 0, 0))
+                rect_center_point = (int((corners[0][0]+corners[1][0]+corners[2][0]+corners[3][0])/4), int((corners[0][1]+corners[1][1]+corners[2][1]+corners[3][1])/4))
+                print(rect_center_point)
+                img_show.draw_cross(rect_center_point, color=(255, 0, 0))
+                if (abs(rect_center_point[0]-328.04)<20 and abs(rect_center_point[1]-126.81)<15):
+                    laser.on()
+                    motor_x.stop()
+                    motor_y.stop()
+                    break
+                laser_pid_x.reset_setpoint(328.04)
+                laser_pid_y.reset_setpoint(126.81)
+                output_x = laser_pid_x.compute(projective_delta_X(corners, 0/26.13, 0))
+                output_y = laser_pid_y.compute(projective_delta_Y(corners, 0/26.13, 0))
+                print(output_x, output_y)
+                print(projective_delta_Y(corners, -2.6/26.13, 0))
+
+                motor_x.position_mode(abs(round(1*output_x))+1, output_x)
+                motor_y.position_mode(abs(round(1*output_y))+1, output_y)
 
         if (flag == 7):
-            task2(img=img, img_show=img_show, laser_threshold=[], blackline_threshold=black_line_threshold,
-                  laser_pid_x=laser_pid_x, laser_pid_y=laser_pid_y, motor=motor)
+
             pass
 
         if (flag == 8):

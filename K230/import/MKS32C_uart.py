@@ -18,7 +18,7 @@ class Stepmotor:
         :param motor_id: 电机ID (0-3)
         """
 
-        self.uart = machine.UART(uart, baudrate=25000)
+        self.uart = uart
         self.motor_id = motor_id
 
     @staticmethod
@@ -324,8 +324,3 @@ class Stepmotor:
 
         self.uart.write(tx_data)
 
-
-motor = Stepmotor(1, 0)
-motor.position_mode(10 , 40)
-#while True:
-#    motor.speed_mode(1, 1)
