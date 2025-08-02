@@ -36,6 +36,7 @@ flag = 1
 touch_counter = 0
 delta_x, delta_y, c, d = 10, 80, 10, 25
 k = 0.2
+tim_initial_angle = 0
 
 #threshold
 black_line_threshold = [(29, 72)]
@@ -154,11 +155,22 @@ try:
     laser=Pin(42,Pin.OUT) #构建led对象，GPIO52,输出
     laser.off()
 
-    motor_x = Stepmotor(1, 0)
-    motor_y = Stepmotor(2, 0)
 
-    laser_pid_x = PID(kp=-2, ki=0, kd=0, setpoint=320, output_limits=(-20,20))
-    laser_pid_y = PID(kp=-2, ki=0, kd=0, setpoint=320, output_limits=(-20,20))
+    fpioa.set_function(11, FPIOA.UART2_TXD)
+    fpioa.set_function(12, FPIOA.UART2_RXD)
+    uart2 = UART(UART.UART2, baudrate=25000)
+    fpioa.set_function(3,FPIOA.UART1_TXD)
+    fpioa.set_function(4,FPIOA.UART1_RXD)
+    uart1=UART(UART.UART1,25000) #设置串口号1和波特率
+
+
+#motor init
+    motor_x = Stepmotor(uart2, 0)
+    motor_y = Stepmotor(uart1, 0)
+
+
+    laser_pid_x = PID(kp=-0.8*k, ki=-0.005*k, kd=-0.45*k, setpoint=320, output_limits=(-20,20))
+    laser_pid_y = PID(kp=0.6*k, ki=0.003*k, kd=0.35*k, setpoint=160, output_limits=(-20,20))
 
     print("camera_test")
 
@@ -386,6 +398,10 @@ try:
             Display_Words(img_show, 8, "保存灰度")
 
         if (flag == 6):
+            if tim_initial_angle == 0:
+                tim_initial_angle = tim_flag
+            if (tim_flag-tim_initial_flag > 35)
+                laser.on()
             img.binary(black_line_threshold, invert = True)
             img.erode(1)
             #img.dilate(2)
@@ -417,10 +433,42 @@ try:
                 motor_y.position_mode(abs(round(1*output_y))+1, output_y)
 
         if (flag == 7):
+            if tim_initial_angle == 0:
+                tim_initial_angle = tim_flag
+            if (tim_flag-tim_initial_flag > 35)
+                laser.on()
+            img.binary(black_line_threshold, invert = True)
+            img.erode(1)
+            #img.dilate(2)
+            rects = img.find_rects(threshold=200000)
+            motor_x.speed_mode(1, 20)
+            if rects:
+                motor_x.speed_mode(1, 0)
+                target_rect = max(rects, key = lambda b: b[4])#提取最大矩形
+                #print(target_rect)
+                corners = target_rect.corners()
+                for corner in corners:
+                    img_show.draw_cross(corner, color=(255, 0, 0))
+                rect_center_point = (int((corners[0][0]+corners[1][0]+corners[2][0]+corners[3][0])/4), int((corners[0][1]+corners[1][1]+corners[2][1]+corners[3][1])/4))
+                print(rect_center_point)
+                img_show.draw_cross(rect_center_point, color=(255, 0, 0))
+                if (abs(rect_center_point[0]-328.04)<20 and abs(rect_center_point[1]-126.81)<15):
+                    laser.on()
+                    motor_x.stop()
+                    motor_y.stop()
+                    break
+                laser_pid_x.reset_setpoint(328.04)
+                laser_pid_y.reset_setpoint(126.81)
+                output_x = laser_pid_x.compute(projective_delta_X(corners, 0/26.13, 0))
+                output_y = laser_pid_y.compute(projective_delta_Y(corners, 0/26.13, 0))
+                print(output_x, output_y)
+                print(projective_delta_Y(corners, -2.6/26.13, 0))
 
-            pass
+                motor_x.position_mode(abs(round(1*output_x))+1, output_x)
+                motor_y.position_mode(abs(round(1*output_y))+1, output_y)
 
         if (flag == 8):
+
             pass
 
         if (flag == 9):
